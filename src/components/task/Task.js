@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { TouchableOpacity, Text, View, StyleSheet } from "react-native";
 import { useState } from "react";
 import colors from "../../../styles/colors";
@@ -6,10 +6,37 @@ import Icon from "react-native-vector-icons/MaterialIcons";
 import CheckIcon from "react-native-vector-icons/Entypo";
 import CancelIcon from "react-native-vector-icons/MaterialIcons";
 import TagIcon from "react-native-vector-icons/AntDesign";
+import { Modal } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { setDeletion, setTasks } from "../../store/reducers/slice";
 
-export default function Task({ data }) {
+export default function Task({ taskdata }) {
   const [isActive, setActive] = useState(false);
-  console.log(data, "data from task component ");
+  const dispatch = useDispatch();
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const { tasks } = useSelector((state) => state.app);
+
+  useEffect(() => {
+    console.log("Component re-rendered.");
+  }, [tasks]);
+
+  const toggleModal = () => {
+    setModalVisible(!isModalVisible);
+  };
+
+  const handleDeletion = () => {
+    if (taskdata.key && taskdata.title) {
+      dispatch(setDeletion(taskdata));
+      toggleModal();
+    }
+  };
+  const handleCompletion = () => {
+    const temp_task = { ...taskdata, status: "completed" };
+    const temp_tasks = [...tasks, temp_task];
+    dispatch(setTasks(temp_tasks));
+  };
+  console.log(taskdata, "data from task component ");
   return (
     <View style={styles.task}>
       <View style={styles.left}>
@@ -17,11 +44,11 @@ export default function Task({ data }) {
       </View>
       <View style={styles.right}>
         <View style={styles.titleContainer}>
-          <Text style={styles.title}>{data.title}</Text>
+          <Text style={styles.title}>{taskdata.title}</Text>
         </View>
         <View style={styles.descriptionCon}>
           <View style={styles.dateCon}>
-            <Text style={styles.date}>{data.date}</Text>
+            <Text style={styles.date}>{taskdata.date}</Text>
           </View>
           <View style={styles.icons}>
             <TouchableOpacity style={styles.tag}>
@@ -37,16 +64,50 @@ export default function Task({ data }) {
           </View>
           <View style={styles.buttons}>
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.doneBox}>
+              <TouchableOpacity
+                style={styles.doneBox}
+                onPress={handleCompletion}
+              >
                 <CheckIcon name="check" color={colors.border} size={30} />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelBox}>
+              <TouchableOpacity onPress={toggleModal} style={styles.cancelBox}>
                 <CancelIcon name="cancel" style={styles.cancel} size={30} />
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => {
+          setModalVisible(!isModalVisible);
+        }}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.addTask}>
+              Are u sure u want to delete this task{" "}
+            </Text>
+            <Text style={styles.deletionTitle}>"{taskdata.title}"</Text>
+            <View style={styles.buttons}>
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={handleDeletion}
+              >
+                <Text style={styles.txt}>okay</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={toggleModal}
+              >
+                <Text style={styles.txt}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -143,5 +204,54 @@ const styles = StyleSheet.create({
   //   },
   cancelText: {
     color: colors.white,
+  },
+
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.8)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    backgroundColor: colors.sColor,
+    borderRadius: 16,
+    padding: 20,
+    width: "80%",
+  },
+  addTask: {
+    color: colors.white,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+    textAlign: "center",
+  },
+
+  buttons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  addButton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.pColor,
+    padding: 15,
+    marginRight: 10,
+    borderRadius: 4,
+  },
+  closeButton: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.sColor,
+    padding: 15,
+    marginLeft: 10,
+    borderRadius: 4,
+  },
+  deletionTitle: {
+    fontSize: 16,
+    color: "white",
+    paddingBottom: 20,
+    textAlign: "center",
   },
 });

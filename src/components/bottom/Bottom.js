@@ -63,6 +63,7 @@ export default function Bottom() {
       day: day,
       month: month,
       year: year,
+      status: "unfinished",
       key: uniqueKey,
     };
     dispatch(setTasks(data));

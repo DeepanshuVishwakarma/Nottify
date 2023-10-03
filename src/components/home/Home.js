@@ -40,8 +40,10 @@ export default function Home() {
         {tasks.length > 0 ? (
           tasks.map((task, index) => (
             <Task
+              tasks={tasks}
               key={index} // Make sure to provide a unique key for each item in the list
-              data={{ title: task.title, date: task.date }} // Corrected the object structure
+              // data={{ title: task.title, date: task.date }} // Corrected the object structure
+              taskdata={task}
             />
           ))
         ) : (
